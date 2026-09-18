@@ -177,17 +177,11 @@
     var e=el("email").value.trim();
     if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e)){ el("email").focus(); return; }
     var res=window.__result||{};
-    var payload={email:e,ts:new Date().toISOString(),
-      result:"rank "+res.r+" -> "+(res.p?RANKS[res.p-1]:"?")+", score "+res.s,
-      source:"valorant-rating-tool"};
-    // local-first capture: append via the Dream capture endpoint if served, else mailto fallback
-    var finished=false;
-    fetch("/capture", {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(payload)})
-      .then(function(r){ if(r.ok){ finished=true; el("emailOk").style.display="block"; } })
-      .catch(function(){})
-      .then(function(){ if(!finished){
-          window.location.href="mailto:eyeofaugust@gmail.com?subject=Valorant rating report&body="+encodeURIComponent("email: "+e+"\nresult: "+payload.result);
-        }});
+    var resultTxt="rank "+res.r+" -> "+(res.p?RANKS[res.p-1]:"?")+", score "+res.s;
+    // Public capture = mailto to the owner inbox (verified, countable). No fake endpoints.
+    el("emailOk").style.display="block";
+    window.location.href="mailto:eyeofaugust@gmail.com?subject=Valorant%20rating%20report&body="+
+      encodeURIComponent("email: "+e+"\nresult: "+resultTxt+"\nsent: "+new Date().toISOString());
   });
 
   el("shareBtn").addEventListener("click",function(){
