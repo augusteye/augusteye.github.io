@@ -58,6 +58,7 @@
   .fine{color:#63636b;font-size:11px;margin-top:14px;text-align:center}
   .emailbox{margin-top:18px;border-top:1px solid var(--border);padding-top:18px}
   .emailbox p{margin:0 0 10px;font-size:13px;color:var(--muted)}
+  .report{background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:14px;margin-top:12px;font-size:13px;white-space:pre-wrap;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--fg)}
   .okmsg{color:var(--ok);font-size:12px;margin-top:8px;display:none}
 </style>
 </head>
@@ -115,12 +116,13 @@
     <div class="verdict" id="verdict"></div>
 
     <div class="emailbox">
-      <p><b>Get your full rating report</b> — the 1-page breakdown of your 3 biggest leaks + what to run this week. Free.</p>
+      <p><b>Get your full rating report</b> — copy your 1-page breakdown, or send it straight to my inbox and I'll read it. Free either way.</p>
+      <div class="report" id="reportBox" style="display:none"></div>
       <div class="row">
         <div style="flex:2;min-width:200px"><input id="email" type="email" placeholder="your@email.com" autocomplete="email"></div>
         <div style="flex:1;min-width:120px;display:flex;align-items:flex-end"><button class="btn" style="margin-top:0;padding:12px 16px" id="getEmail">Send it</button></div>
       </div>
-      <div class="okmsg" id="emailOk">Got it — report is on its way.</div>
+      <div class="okmsg" id="emailOk">Sent — check your email client one last time and hit send. Report is in the message.</div>
     </div>
 
     <div class="cta">
@@ -171,7 +173,7 @@
 
   el("go").addEventListener("click",function(){
     var r=parseInt(el("rank").value,10);
-    var w=Math.max(0,Math.min(10,parseInt(el("wins").value,10)||0));
+    var w=Math.max(0,Math.min(10,parseInt(el("wins").value)||0));
     var k=Math.max(0,Math.min(4,parseFloat(el("kd").value)||0));
     var s=score(r,w,k), p=project(r,s), m=momentum(w,k), f=topFix(w,k), v=verdictFor(s);
 
@@ -182,25 +184,48 @@
     el("statMomentum").textContent=m;
     el("statFix").textContent=f;
     var vd=el("verdict"); vd.textContent=v.txt; vd.className="verdict "+v.cls;
-    window.__result={r:r,w:w,k:k,s:s,p:p};
+    window.__result={r:r,w:w,k:k,s:s,p:p,m:m,f:f,vv:v.txt};
+    renderReport();
     el("out").style.display="block";
     el("out").scrollIntoView({behavior:"smooth",block:"nearest"});
   });
+
+  function renderReport(){
+    var r=window.__result; if(!r) return;
+    var lines=[
+      "VALORANT CAREER RATING — augusteye.github.io",
+      "------------------------------",
+      "Current rank:     "+RANKS[r.r-1],
+      "Win rate (last 10): "+Math.round(r.w*10)+"%",
+      "Avg K/D (last 10):  "+r.k,
+      "Momentum:         "+r.m,
+      "Rating score:     "+r.s+" / 100",
+      "Projected rank:   "+RANKS[r.p-1],
+      "Top fix:          "+r.f,
+      "Verdict:          "+r.vv,
+      "",
+      "Want the full plan (settings + agent one-pagers + VOD method)? Coach Pack $12: augusteye.github.io/coach"
+    ];
+    var box=el("reportBox");
+    box.textContent=lines.join("\n");
+    box.style.display="block";
+    box.id="reportBox";
+  }
 
   el("getEmail").addEventListener("click",function(){
     var e=el("email").value.trim();
     if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e)){ el("email").focus(); return; }
     var res=window.__result||{};
-    var resultTxt="rank "+res.r+" -> "+(res.p?RANKS[res.p-1]:"?")+", score "+res.s;
+    var reportTxt=el("reportBox").textContent;
     // Public capture = mailto to the owner inbox (verified, countable). No fake endpoints.
     el("emailOk").style.display="block";
-    window.location.href="mailto:eyeofaugust@gmail.com?subject=Valorant%20rating%20report&body="+
-      encodeURIComponent("email: "+e+"\nresult: "+resultTxt+"\nsent: "+new Date().toISOString());
+    window.location.href="mailto:eyeofaugust@gmail.com?subject=Valorant%20rating%20report%20—%20"+encodeURIComponent(e)+"&body="+
+      encodeURIComponent("email: "+e+"\n\n"+reportTxt+"\n\nsent: "+new Date().toISOString());
   });
 
   el("shareBtn").addEventListener("click",function(){
     var r=window.__result; if(!r) return;
-    var txt="I just got my Valorant Career Rating: "+RANKS[r.r-1]+" heading to "+RANKS[r.p-1]+". Try it — it's free.";
+    var txt="I just got my Valorant Career Rating: "+RANKS[r.r-1]+" heading to "+RANKS[r.p-1]+". It's free, 30 seconds — try it.";
     if(navigator.share){ navigator.share({text:txt,url:location.href}).catch(function(){}); }
     else if(navigator.clipboard){ navigator.clipboard.writeText(txt+" "+location.href).then(function(){ el("shareBtn").textContent="Copied ✓"; setTimeout(function(){el("shareBtn").textContent="Share my result ↗"},2000); }); }
   });
