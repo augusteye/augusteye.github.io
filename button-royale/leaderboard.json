@@ -1,0 +1,10 @@
+{
+  "v": 1,
+  "note": "Featured scores for Button Royale. Add entries per mode; keep newest 10 per mode.",
+  "leaderboards": {
+    "standard": [],
+    "blitz": [],
+    "marathon": [],
+    "frenzy": []
+  }
+}

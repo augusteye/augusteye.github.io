@@ -229,6 +229,21 @@
     S.raf=requestAnimationFrame(loop);
   }
   function checksum(s){ var h=7; for(var i=0;i<s.length;i++){ h=(h*31+s.charCodeAt(i))>>>0; } return h.toString(36); }
+  // Deterministic, client-side-verifiable share code (no backend needed).
+  function makeCode(mode,points,tps){
+    var tps10=Math.round(tps*10);
+    var payload=mode.slice(0,3).toUpperCase()+'|'+points+'|'+tps10;
+    return 'BR-'+payload+'-'+checksum(payload);
+  }
+  function verifyCode(code){
+    if(!code||code.slice(0,3)!=='BR-') return null;
+    var body=code.slice(3), dash=body.lastIndexOf('-');
+    if(dash<0) return null;
+    var payload=body.slice(0,dash), sig=body.slice(dash+1);
+    if(checksum(payload)!==sig) return {mode:null, bad:true}; // tampered
+    var p=payload.split('|');
+    return {mode:p[0].toLowerCase(), points:+p[1], tps:(+p[2])/10, ok:true};
+  }
   function finish(){
     S.running=false; cancelAnimationFrame(S.raf);
     var tps=S.taps/S.dur;
@@ -236,9 +251,9 @@
     if(S.points>(best[S.mode]||0)) best[S.mode]=S.points;
     if(tps>(bestTps[S.mode]||0)) bestTps[S.mode]=tps;
     saveLocal(S.mode); save();
-    var seed=(Date.now()%1e9);
-    var core=S.mode.slice(0,3).toUpperCase()+String(S.points)+Math.round(tps*10)+'-'+checksum(S.mode+S.points+tps+seed);
-    $('sharecode').textContent='code: BR-'+core;
+    var code=makeCode(S.mode,S.points,tps);
+    window.__lastCode=code;
+    $('sharecode').textContent='code: '+code;
     $('ovTitle').textContent='ROYALE COMPLETE';
     $('ovScore').textContent=S.points;
     $('newbest').textContent=nb?'★ NEW BEST ★':(S.daily?'DAILY: CLEARED':'');
@@ -250,13 +265,15 @@
     pushToBoard(S.points, tps);
   }
 
-  // ---------- global leaderboard (serverless, best-effort, injected at deploy) ----------
-  var LB_URL = (window.BR_LEADERBOARD && window.BR_LEADERBOARD.url) || '';
-  function renderBoard(entries){
+  // ---------- global leaderboard (read-only, same-origin JSON, zero-maintenance) ----------
+  // A "featured scores" board sourced from our own Pages site (no external dependency, no CORS).
+  var LB_URL = (window.BR_LEADERBOARD && window.BR_LEADERBOARD.url) || 'leaderboard.json';
+  function renderBoard(entries, label){
     var ol=$('boardList'); ol.innerHTML='';
     var list=(entries||[]).slice(0,10);
     $('board').style.display='block';
-    if(!list.length){ ol.innerHTML='<li style="justify-content:center">no scores yet — be first</li>'; return; }
+    $('boardMode').textContent=(label||S.mode);
+    if(!list.length){ ol.innerHTML='<li style="justify-content:center">no verified scores yet — be first</li>'; return; }
     var myName=(localStorage.getItem('br2_name')||'').slice(0,12);
     list.forEach(function(e,i){
       var li=document.createElement('li');
@@ -266,19 +283,19 @@
     });
   }
   function pullBoard(){
-    if(!LB_URL) { $('board').style.display='none'; return; }
-    fetch(LB_URL+'?m='+S.mode)
-      .then(function(r){ return r.json(); })
-      .then(function(d){ window.__lbCache=window.__lbCache||{}; window.__lbCache[S.mode]=d; renderBoard(d); })
-      .catch(function(){ $('board').style.display='none'; });
+    window.__lbCache=window.__lbCache||{};
+    if(window.__lbCache[S.mode]){ renderBoard(window.__lbCache[S.mode], S.mode); return; }
+    fetch(LB_URL)
+      .then(function(r){ if(!r.ok) throw 0; return r.json(); })
+      .then(function(d){
+        window.__lbCache={};
+        Object.keys(d.leaderboards||{}).forEach(function(m){ window.__lbCache[m]=(d.leaderboards[m]||[]); });
+        renderBoard(window.__lbCache[S.mode]);
+      })
+      .catch(function(){ $('board').style.display='block'; $('boardMode').textContent=S.mode; $('boardList').innerHTML='<li style="justify-content:center">board offline</li>'; });
   }
-  function pushToBoard(score,tps){
-    if(!LB_URL || score===0) return;
-    var entry={n:(localStorage.getItem('br2_name')||'').slice(0,12)||'anon', s:score, t:Math.round(tps*100)/100};
-    fetch(LB_URL,{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({m:S.mode, e:entry})}).catch(function(){});
-    pullBoard();
-  }
+  // No anonymous write endpoint (zero-maintenance, no secret). Scores are verified via share codes.
+  function pushToBoard(score,tps){ pullBoard(); }
 
   // ---------- daily challenge (same seed every day) ----------
   function dailySeed(){ var d=new Date(); return d.getUTCFullYear()*10000+(d.getUTCMonth()+1)*100+d.getUTCDate(); }
@@ -328,12 +345,26 @@
     });
   });
   $('sharecode').addEventListener('click',function(){
-    var t=$('sharecode').textContent; if(!t) return;
-    var tps=S.taps/S.dur;
-    var txt='BUTTON ROYALE — '+S.points+' pts ('+S.mode+'), '+Math.round(tps*10)/10+' tps! Beat me? https://augusteye.github.io/button-royale/ ('+t+')';
+    var code=window.__lastCode; if(!code) return;
+    var txt='BUTTON ROYALE — beat '+code.slice(3,code.lastIndexOf('-'))+
+      '! https://augusteye.github.io/button-royale/?code='+encodeURIComponent(code);
     if(navigator.clipboard){ navigator.clipboard.writeText(txt);
       var toast=$('toast'); toast.style.opacity=1; setTimeout(function(){ toast.style.opacity=0; },1200); }
   });
+  // Resolve a shared code on load: ?code=BR-... verifies client-side and sets a "beat this" target.
+  (function(){
+    var m=location.search.match(/code=([^&]+)/); if(!m) return;
+    var v=verifyCode(decodeURIComponent(m[1]));
+    if(v&&v.ok&&MODES[v.mode]){
+      var pts=v.points;
+      S.daily=false; S.mode=v.mode; S.dur=MODES[v.mode].dur;
+      $('dailybox').textContent='BEAT THIS: '+pts+' pts in '+S.dur+'s ('+v.mode+' · verified code)';
+      document.querySelectorAll('.mode').forEach(function(x){ x.classList.remove('active'); });
+      var el=document.querySelector('.mode[data-mode="'+v.mode+'"]'); if(el) el.classList.add('active');
+    } else {
+      $('dailybox').textContent='That share code looks invalid.';
+    }
+  })();
   if(!localStorage.getItem('br2_name')){
     setTimeout(function(){ var n=prompt('Optional: your name for the top-10 board (3-12 chars):');
       if(n){ n=n.trim().slice(0,12); if(n) localStorage.setItem('br2_name',n); } },600);
@@ -341,6 +372,7 @@
   pullBoard();
 
   window.RB={ start:start, tap:function(){ tap(null); }, daily:startDaily,
+    makeCode:makeCode, verifyCode:verifyCode,
     get state(){ return {running:S.running, points:S.points, taps:S.taps, mode:S.mode, daily:S.daily, dur:S.dur}; } };
 })();
 </script>
