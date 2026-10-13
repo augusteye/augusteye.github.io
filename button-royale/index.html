@@ -232,7 +232,7 @@
   // Deterministic, client-side-verifiable share code (no backend needed).
   function makeCode(mode,points,tps){
     var tps10=Math.round(tps*10);
-    var payload=mode.slice(0,3).toUpperCase()+'|'+points+'|'+tps10;
+    var payload=mode+'|'+points+'|'+tps10;
     return 'BR-'+payload+'-'+checksum(payload);
   }
   function verifyCode(code){
