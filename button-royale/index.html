@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Button Royale — the 30-second tap royale | August Eye</title>
+<meta name="description" content="How fast can you tap? Play Button Royale free in your browser — 30s standard, 10s blitz, 60s marathon. Beat your best, grab your share code.">
+<meta property="og:title" content="Button Royale — can you hit x10 in 30 seconds?">
+<meta property="og:description" content="The 30-second tap royale. Free, in your browser, by August Eye.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://augusteye.github.io/button-royale/">
+<meta property="og:image" content="https://augusteye.github.io/og-home.png">
+<meta name="twitter:card" content="summary">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body { height:100%; overflow:hidden; }
+  body {
+    font-family:'Segoe UI', system-ui, -apple-system, sans-serif;
+    background:radial-gradient(ellipse at 50% 30%, #1b2340 0%, #0d1024 55%, #070811 100%);
+    color:#eef1ff; user-select:none; -webkit-user-select:none; touch-action:manipulation;
+    display:flex; flex-direction:column; align-items:center;
+  }
+  #arena { position:relative; flex:1; width:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2vh; }
+  h1 {
+    font-size:clamp(28px,6vw,54px); letter-spacing:2px; font-weight:800;
+    background:linear-gradient(90deg,#ffd54a,#ff9d3a,#ffd54a);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+    text-shadow:0 0 40px rgba(255,180,40,.15);
+  }
+  #modebar { display:flex; gap:8px; }
+  .mode {
+    padding:6px 16px; border-radius:999px; border:1px solid #34406e; background:#141a33;
+    color:#9aa6d8; font-size:13px; cursor:pointer; transition:all .15s;
+  }
+  .mode.active { background:#ffd54a; color:#201a05; border-color:#ffd54a; font-weight:700; box-shadow:0 0 18px rgba(255,213,74,.4); }
+  #hud { display:flex; gap:34px; font-variant-numeric:tabular-nums; }
+  .stat { text-align:center; }
+  .stat .lbl { font-size:11px; letter-spacing:2px; color:#7482b8; text-transform:uppercase; }
+  .stat .val { font-size:clamp(22px,4vw,34px); font-weight:800; color:#fff; }
+  #mult { color:#ffd54a; }
+  #timerwrap { width:min(46vw,340px); height:8px; border-radius:4px; background:#1a2142; overflow:hidden; }
+  #timerbar { height:100%; width:100%; background:linear-gradient(90deg,#ffd54a,#ff7a3a); transition:width .1s linear; }
+  #btnwrap { position:relative; width:min(44vmin,320px); height:min(44vmin,320px); display:flex; align-items:center; justify-content:center; }
+  #ring {
+    position:absolute; inset:-9%; border-radius:50%;
+    background:conic-gradient(from 0deg,#ffd54a,#ff7a3a,#8a5cff,#ffd54a);
+    animation:spin 5s linear infinite; filter:blur(6px); opacity:.5;
+  }
+  @keyframes spin { to { transform:rotate(360deg); } }
+  #btn {
+    position:relative; width:100%; height:100%; border-radius:50%; border:none; cursor:pointer;
+    background:radial-gradient(circle at 35% 30%, #5a6fb8, #2c3a6e 60%, #1c2547);
+    box-shadow:0 12px 40px rgba(0,0,0,.6), inset 0 4px 14px rgba(255,255,255,.15), inset 0 -10px 24px rgba(0,0,0,.5);
+    font-size:clamp(14px,2.6vmin,20px); font-weight:700; letter-spacing:3px; color:#dfe6ff;
+    transition:transform .06s;
+  }
+  #btn:active, #btn.press { transform:scale(.93); }
+  #crown { position:absolute; top:-7%; left:50%; transform:translateX(-50%); font-size:min(13vmin,90px); filter:drop-shadow(0 6px 14px rgba(255,190,40,.5)); pointer-events:none; }
+  #overlay {
+    position:fixed; inset:0; background:rgba(6,8,18,.86); backdrop-filter:blur(6px);
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:18px; z-index:10;
+  }
+  #overlay.hidden { display:none; }
+  #ovTitle { font-size:clamp(30px,7vw,58px); font-weight:800; letter-spacing:2px; color:#ffd54a; }
+  #ovScore { font-size:clamp(44px,11vw,96px); font-weight:900; font-variant-numeric:tabular-nums; }
+  #ovStats { display:flex; gap:26px; color:#9aa6d8; font-size:14px; }
+  #ovStats b { display:block; font-size:22px; color:#fff; text-align:center; }
+  #newbest { color:#7dff9a; font-weight:800; letter-spacing:3px; min-height:22px; }
+  #startbtn {
+    padding:14px 44px; border-radius:999px; border:none; font-size:18px; font-weight:800; letter-spacing:2px;
+    background:linear-gradient(90deg,#ffd54a,#ff9d3a); color:#241a03; cursor:pointer;
+    box-shadow:0 8px 28px rgba(255,180,40,.35); transition:transform .1s;
+  }
+  #startbtn:hover { transform:scale(1.05); }
+  .particle { position:absolute; width:10px; height:10px; border-radius:50%; pointer-events:none; }
+  #toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%); background:#1c2547; border:1px solid #34406e;
+    padding:8px 18px; border-radius:999px; font-size:13px; opacity:0; transition:opacity .3s; z-index:20; }
+  #credit { position:fixed; bottom:10px; color:#4a5680; font-size:11px; letter-spacing:1px; z-index:5; }
+  #sharecode { font-family:monospace; font-size:12px; color:#6d7ba8; letter-spacing:1px; min-height:16px; }
+  #coachcta { color:#ffd54a; font-size:13px; text-decoration:none; border-bottom:1px dotted #6a5a1e; letter-spacing:.4px; }
+  #coachcta:hover { color:#fff; }
+  #cornercta { position:fixed; top:14px; right:16px; z-index:6; font-size:11px; color:#4a5680; text-decoration:none; letter-spacing:.6px; }
+  #cornercta:hover { color:#ffd54a; }
+</style>
+</head>
+<body>
+<div id="arena">
+  <h1>BUTTON ROYALE</h1>
+  <div id="modebar">
+    <div class="mode active" data-mode="standard" data-dur="30">Standard 30s</div>
+    <div class="mode" data-mode="blitz" data-dur="10">Blitz 10s</div>
+    <div class="mode" data-mode="marathon" data-dur="60">Marathon 60s</div>
+  </div>
+  <div id="hud">
+    <div class="stat"><div class="lbl">Score</div><div class="val" id="score">0</div></div>
+    <div class="stat"><div class="lbl">Taps</div><div class="val" id="taps">0</div></div>
+    <div class="stat"><div class="lbl">Mult</div><div class="val" id="mult">x1</div></div>
+    <div class="stat"><div class="lbl">Best</div><div class="val" id="best">0</div></div>
+  </div>
+  <div id="timerwrap"><div id="timerbar"></div></div>
+  <div id="btnwrap">
+    <div id="ring"></div>
+    <button id="btn">TAP</button>
+    <div id="crown">👑</div>
+  </div>
+</div>
+<div id="overlay">
+  <div id="ovTitle">BUTTON ROYALE</div>
+  <div id="ovStats"><span><b id="stBest">0</b>Best</span><span><b id="stTps">0</b>Best TPS</span></span></div>
+  <div id="newbest"></div>
+  <div id="ovScore"></div>
+  <button id="startbtn">PLAY</button>
+  <div id="sharecode"></div>
+  <a id="coachcta" href="https://augusteye2.gumroad.com/l/wdedzu" target="_blank" rel="noopener">Play more? Grab the Valorant Coach Pack — every setting &amp; the method → </a>
+</div>
+<div id="toast">copied!</div>
+<a id="cornercta" href="https://augusteye2.gumroad.com/l/wdedzu" target="_blank" rel="noopener">COACH PACK →</a>
+<div id="credit">AUGUST EYE · demo build</div>
+<script>
+(function(){
+  "use strict";
+  var $ = function(id){ return document.getElementById(id); };
+  var S = { mode:'standard', dur:30, running:false, t0:0, endAt:0, taps:0, points:0, streak:0, lastTap:0, raf:0 };
+  var best = 0, bestTps = 0;
+  try { best = parseInt(localStorage.getItem('br_best_'+S.mode)||'0',10)||0;
+       bestTps = parseFloat(localStorage.getItem('br_tps_'+S.mode)||'0')||0; } catch(e){}
+  function save(){ $('best').textContent = best; $('stBest').textContent = best; $('stTps').textContent = bestTps.toFixed(1); }
+  save();
+
+  // ---- audio (synthesized, no assets) ----
+  var AC = null;
+  function blip(m){
+    try {
+      if(!AC) AC = new (window.AudioContext||window.webkitAudioContext)();
+      var o = AC.createOscillator(), g = AC.createGain();
+      o.type='triangle'; o.frequency.value = 340 + m*70 + Math.random()*30;
+      g.gain.value = 0.12;
+      o.connect(g); g.connect(AC.destination);
+      o.start(); g.gain.exponentialRampToValueAtTime(0.001, AC.currentTime+0.08); o.stop(AC.currentTime+0.09);
+    } catch(e){}
+  }
+
+  // ---- particles ----
+  function burst(x,y,m){
+    for(var i=0;i<7;i++){
+      var p = document.createElement('div'); p.className='particle';
+      p.style.background = i%3===0 ? '#ffd54a' : (i%3===1 ? '#ff7a3a' : '#8a5cff');
+      p.style.left=x+'px'; p.style.top=y+'px';
+      document.body.appendChild(p);
+      var a = Math.random()*Math.PI*2, sp = 60+Math.random()*140*(1+m*0.08);
+      var dx=Math.cos(a)*sp, dy=Math.sin(a)*sp-60;
+      var st = p.animate(
+        [{transform:'translate(0,0) scale(1)',opacity:1},{transform:'translate('+dx+'px,'+(dy+120)+'px) scale(.2)',opacity:0}],
+        {duration:550+Math.random()*250, easing:'cubic-bezier(.2,.6,.4,1)'}
+      );
+      st.onfinish = function(ev){ ev.target.effect.element.remove(); };
+    }
+  }
+
+  // ---- game ----
+  function start(){
+    S.running = true; S.taps=0; S.points=0; S.streak=0; S.lastTap=0;
+    S.t0 = performance.now(); S.endAt = S.t0 + S.dur*1000;
+    $('overlay').classList.add('hidden');
+    $('score').textContent='0'; $('taps').textContent='0'; $('mult').textContent='x1';
+    loop();
+  }
+  function tap(e){
+    if(!S.running) return;
+    var now = performance.now();
+    S.streak = (S.lastTap && now - S.lastTap < 350) ? S.streak+1 : 1;
+    S.lastTap = now;
+    var m = 1 + Math.min(9, Math.floor(S.streak/10));
+    S.points += m; S.taps++;
+    $('score').textContent = S.points; $('taps').textContent = S.taps; $('mult').textContent = 'x'+m;
+    var r = $('btnwrap').getBoundingClientRect();
+    var cx = (e && e.clientX !== undefined) ? e.clientX - r.left : r.width/2;
+    var cy = (e && e.clientY !== undefined) ? e.clientY - r.top : r.height/2;
+    burst(cx, cy, m); blip(m);
+    var b = $('btn'); b.classList.add('press'); setTimeout(function(){ b.classList.remove('press'); }, 60);
+  }
+  function loop(){
+    if(!S.running) return;
+    var now = performance.now();
+    var left = Math.max(0, S.endAt - now);
+    $('timerbar').style.width = (left/(S.dur*1000)*100)+'%';
+    if(left <= 0){ finish(); return; }
+    S.raf = requestAnimationFrame(loop);
+  }
+  function finish(){
+    S.running = false; cancelAnimationFrame(S.raf);
+    var tps = S.taps / S.dur;
+    var nb = false;
+    if(S.points > best){ best = S.points; nb = true; }
+    if(tps > bestTps){ bestTps = tps; }
+    try { localStorage.setItem('br_best_'+S.mode, String(best));
+          localStorage.setItem('br_tps_'+S.mode, String(bestTps)); } catch(e){}
+    save();
+    // share code
+    var code = (Date.now()%1e7).toString(36) + (S.points*7+13).toString(36);
+    $('sharecode').textContent = 'code: BR-'+code;
+    $('ovTitle').textContent = 'ROYALE COMPLETE';
+    $('ovScore').textContent = S.points;
+    $('ovStats').style.visibility='visible';
+    $('newbest').textContent = nb ? '★ NEW BEST ★' : '';
+    $('startbtn').textContent = 'PLAY AGAIN';
+    $('overlay').classList.remove('hidden');
+  }
+
+  // ---- wiring ----
+  var btn = $('btn');
+  btn.addEventListener('pointerdown', function(e){ e.preventDefault(); tap(e); });
+  btn.addEventListener('contextmenu', function(e){ e.preventDefault(); });
+  document.addEventListener('keydown', function(e){ if((e.key===' '||e.key==='Enter') && S.running){ e.preventDefault(); tap(null); } });
+  $('startbtn').addEventListener('click', function(){ start(); });
+  document.querySelectorAll('.mode').forEach(function(el){
+    el.addEventListener('click', function(){
+      document.querySelectorAll('.mode').forEach(function(x){ x.classList.remove('active'); });
+      el.classList.add('active');
+      S.mode = el.dataset.mode; S.dur = parseInt(el.dataset.dur,10);
+      try { best = parseInt(localStorage.getItem('br_best_'+S.mode)||'0',10)||0;
+            bestTps = parseFloat(localStorage.getItem('br_tps_'+S.mode)||'0')||0; } catch(e2){}
+      save();
+    });
+  });
+  $('sharecode').addEventListener('click', function(){
+    var t = $('sharecode').textContent; if(!t) return;
+    if(navigator.clipboard){ navigator.clipboard.writeText('BUTTON ROYALE — '+S.points+' pts! Beat my score? https://augusteye.github.io/button-royale/ (code '+t.split(' ')[1]+')');
+      var toast=$('toast'); toast.style.opacity=1; setTimeout(function(){ toast.style.opacity=0; },1200); }
+  });
+  // expose for automated testing
+  window.RB = { start:start, tap:function(){ tap(null); }, get state(){ return {running:S.running, points:S.points, taps:S.taps, mode:S.mode}; } };
+})();
+</script>
+</body>
+</html>
