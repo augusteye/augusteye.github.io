@@ -4,9 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Button Royale — the 30-second tap royale | August Eye</title>
-<meta name="description" content="How fast can you tap? Play Button Royale free in your browser — 30s standard, 10s blitz, 60s marathon. Beat your best, grab your share code.">
+<meta name="description" content="How fast can you tap? Button Royale: Standard, Blitz, Marathon — and Frenzy, where the button keeps shrinking. Daily challenge, global top 10, share codes. Free, in your browser.">
 <meta property="og:title" content="Button Royale — can you hit x10 in 30 seconds?">
-<meta property="og:description" content="The 30-second tap royale. Free, in your browser, by August Eye.">
+<meta property="og:description" content="The 30-second tap royale. Frenzy mode, daily challenge, global leaderboard. Free, in your browser, by August Eye.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://augusteye.github.io/button-royale/">
 <meta property="og:image" content="https://augusteye.github.io/og-home.png">
@@ -22,21 +22,22 @@
   }
   #arena { position:relative; flex:1; width:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2vh; }
   h1 {
-    font-size:clamp(28px,6vw,54px); letter-spacing:2px; font-weight:800;
+    font-size:clamp(26px,5.5vw,48px); letter-spacing:2px; font-weight:800;
     background:linear-gradient(90deg,#ffd54a,#ff9d3a,#ffd54a);
     -webkit-background-clip:text; background-clip:text; color:transparent;
-    text-shadow:0 0 40px rgba(255,180,40,.15);
   }
-  #modebar { display:flex; gap:8px; }
+  #modebar { display:flex; gap:8px; flex-wrap:wrap; justify-content:center; }
   .mode {
     padding:6px 16px; border-radius:999px; border:1px solid #34406e; background:#141a33;
     color:#9aa6d8; font-size:13px; cursor:pointer; transition:all .15s;
   }
   .mode.active { background:#ffd54a; color:#201a05; border-color:#ffd54a; font-weight:700; box-shadow:0 0 18px rgba(255,213,74,.4); }
-  #hud { display:flex; gap:34px; font-variant-numeric:tabular-nums; }
+  .mode.frenzy.active { background:#ff5470; color:#2a0510; border-color:#ff5470; box-shadow:0 0 22px rgba(255,84,112,.5); }
+  #dailybox { font-size:12px; color:#8fa0d8; letter-spacing:.5px; min-height:16px; }
+  #hud { display:flex; gap:30px; font-variant-numeric:tabular-nums; }
   .stat { text-align:center; }
   .stat .lbl { font-size:11px; letter-spacing:2px; color:#7482b8; text-transform:uppercase; }
-  .stat .val { font-size:clamp(22px,4vw,34px); font-weight:800; color:#fff; }
+  .stat .val { font-size:clamp(20px,3.6vw,32px); font-weight:800; color:#fff; }
   #mult { color:#ffd54a; }
   #timerwrap { width:min(46vw,340px); height:8px; border-radius:4px; background:#1a2142; overflow:hidden; }
   #timerbar { height:100%; width:100%; background:linear-gradient(90deg,#ffd54a,#ff7a3a); transition:width .1s linear; }
@@ -52,17 +53,17 @@
     background:radial-gradient(circle at 35% 30%, #5a6fb8, #2c3a6e 60%, #1c2547);
     box-shadow:0 12px 40px rgba(0,0,0,.6), inset 0 4px 14px rgba(255,255,255,.15), inset 0 -10px 24px rgba(0,0,0,.5);
     font-size:clamp(14px,2.6vmin,20px); font-weight:700; letter-spacing:3px; color:#dfe6ff;
-    transition:transform .06s;
+    transition:transform .06s, width .3s, height .3s;
   }
   #btn:active, #btn.press { transform:scale(.93); }
   #crown { position:absolute; top:-7%; left:50%; transform:translateX(-50%); font-size:min(13vmin,90px); filter:drop-shadow(0 6px 14px rgba(255,190,40,.5)); pointer-events:none; }
   #overlay {
     position:fixed; inset:0; background:rgba(6,8,18,.86); backdrop-filter:blur(6px);
-    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:18px; z-index:10;
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px; z-index:10;
   }
   #overlay.hidden { display:none; }
-  #ovTitle { font-size:clamp(30px,7vw,58px); font-weight:800; letter-spacing:2px; color:#ffd54a; }
-  #ovScore { font-size:clamp(44px,11vw,96px); font-weight:900; font-variant-numeric:tabular-nums; }
+  #ovTitle { font-size:clamp(28px,6.5vw,54px); font-weight:800; letter-spacing:2px; color:#ffd54a; }
+  #ovScore { font-size:clamp(40px,10vw,88px); font-weight:900; font-variant-numeric:tabular-nums; }
   #ovStats { display:flex; gap:26px; color:#9aa6d8; font-size:14px; }
   #ovStats b { display:block; font-size:22px; color:#fff; text-align:center; }
   #newbest { color:#7dff9a; font-weight:800; letter-spacing:3px; min-height:22px; }
@@ -76,11 +77,16 @@
   #toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%); background:#1c2547; border:1px solid #34406e;
     padding:8px 18px; border-radius:999px; font-size:13px; opacity:0; transition:opacity .3s; z-index:20; }
   #credit { position:fixed; bottom:10px; color:#4a5680; font-size:11px; letter-spacing:1px; z-index:5; }
-  #sharecode { font-family:monospace; font-size:12px; color:#6d7ba8; letter-spacing:1px; min-height:16px; }
   #coachcta { color:#ffd54a; font-size:13px; text-decoration:none; border-bottom:1px dotted #6a5a1e; letter-spacing:.4px; }
   #coachcta:hover { color:#fff; }
   #cornercta { position:fixed; top:14px; right:16px; z-index:6; font-size:11px; color:#4a5680; text-decoration:none; letter-spacing:.6px; }
   #cornercta:hover { color:#ffd54a; }
+  #sharecode { font-family:monospace; font-size:12px; color:#6d7ba8; letter-spacing:1px; min-height:16px; cursor:pointer; }
+  #board { display:none; margin-top:2px; border:1px solid #232c52; border-radius:12px; padding:10px 16px; min-width:230px; background:rgba(10,13,30,.6); }
+  #board h3 { font-size:11px; letter-spacing:2px; color:#7482b8; margin-bottom:6px; text-align:center; }
+  #board ol { list-style:none; }
+  #board li { display:flex; justify-content:space-between; gap:18px; font-size:12px; padding:2px 0; color:#c7d0f4; font-variant-numeric:tabular-nums; }
+  #board li.me { color:#ffd54a; font-weight:700; }
 </style>
 </head>
 <body>
@@ -90,7 +96,10 @@
     <div class="mode active" data-mode="standard" data-dur="30">Standard 30s</div>
     <div class="mode" data-mode="blitz" data-dur="10">Blitz 10s</div>
     <div class="mode" data-mode="marathon" data-dur="60">Marathon 60s</div>
+    <div class="mode frenzy" data-mode="frenzy" data-dur="45">🔥 Frenzy 45s</div>
+    <div class="mode daily" data-mode="daily">📅 Daily</div>
   </div>
+  <div id="dailybox"></div>
   <div id="hud">
     <div class="stat"><div class="lbl">Score</div><div class="val" id="score">0</div></div>
     <div class="stat"><div class="lbl">Taps</div><div class="val" id="taps">0</div></div>
@@ -103,6 +112,7 @@
     <button id="btn">TAP</button>
     <div id="crown">👑</div>
   </div>
+  <div id="board"><h3>GLOBAL TOP 10 — <span id="boardMode">standard</span></h3><ol id="boardList"></ol></div>
 </div>
 <div id="overlay">
   <div id="ovTitle">BUTTON ROYALE</div>
@@ -115,39 +125,60 @@
 </div>
 <div id="toast">copied!</div>
 <a id="cornercta" href="https://augusteye2.gumroad.com/l/wdedzu" target="_blank" rel="noopener">COACH PACK →</a>
-<div id="credit">AUGUST EYE · demo build</div>
+<div id="credit">AUGUST EYE · v2</div>
 <script>
 (function(){
   "use strict";
   var $ = function(id){ return document.getElementById(id); };
-  var S = { mode:'standard', dur:30, running:false, t0:0, endAt:0, taps:0, points:0, streak:0, lastTap:0, raf:0 };
-  var best = 0, bestTps = 0;
-  try { best = parseInt(localStorage.getItem('br_best_'+S.mode)||'0',10)||0;
-       bestTps = parseFloat(localStorage.getItem('br_tps_'+S.mode)||'0')||0; } catch(e){}
-  function save(){ $('best').textContent = best; $('stBest').textContent = best; $('stTps').textContent = bestTps.toFixed(1); }
-  save();
+  var MODES = { standard:{dur:30}, blitz:{dur:10}, marathon:{dur:60}, frenzy:{dur:45} };
+  var S = { mode:'standard', dur:30, running:false, t0:0, endAt:0, taps:0, points:0, streak:0, lastTap:0, raf:0, daily:false };
+  var best = {}, bestTps = {};
+  function loadLocal(){
+    try {
+      Object.keys(MODES).forEach(function(m){
+        best[m] = parseInt(localStorage.getItem('br2_best_'+m)||'0',10)||0;
+        bestTps[m] = parseFloat(localStorage.getItem('br2_tps_'+m)||'0')||0;
+      });
+    } catch(e){}
+  }
+  function saveLocal(m){
+    try {
+      localStorage.setItem('br2_best_'+m, String(best[m]||0));
+      localStorage.setItem('br2_tps_'+m, String(bestTps[m]||0));
+    } catch(e){}
+  }
+  function save(){ $('best').textContent = best[S.mode]||0; $('stBest').textContent = best[S.mode]||0; $('stTps').textContent = (bestTps[S.mode]||0).toFixed(1); }
 
-  // ---- audio (synthesized, no assets) ----
+  // ---------- audio (synth, no assets) ----------
   var AC = null;
-  function blip(m){
+  function blip(m, win){
     try {
       if(!AC) AC = new (window.AudioContext||window.webkitAudioContext)();
-      var o = AC.createOscillator(), g = AC.createGain();
-      o.type='triangle'; o.frequency.value = 340 + m*70 + Math.random()*30;
-      g.gain.value = 0.12;
-      o.connect(g); g.connect(AC.destination);
+      if(win){
+        [523,659,784,1047].forEach(function(f,i){
+          var o=AC.createOscillator(), g=AC.createGain();
+          o.type='sine'; o.frequency.value=f;
+          g.gain.value=0.10; o.connect(g); g.connect(AC.destination);
+          var t=AC.currentTime+i*0.09; o.start(t); g.gain.exponentialRampToValueAtTime(0.001,t+0.18); o.stop(t+0.2);
+        });
+        return;
+      }
+      var o=AC.createOscillator(), g=AC.createGain();
+      o.type='triangle'; o.frequency.value=340+m*70+Math.random()*30;
+      g.gain.value=0.12; o.connect(g); g.connect(AC.destination);
       o.start(); g.gain.exponentialRampToValueAtTime(0.001, AC.currentTime+0.08); o.stop(AC.currentTime+0.09);
     } catch(e){}
   }
 
-  // ---- particles ----
-  function burst(x,y,m){
-    for(var i=0;i<7;i++){
+  // ---------- particles ----------
+  function burst(x,y,m,big){
+    var n = big?18:7;
+    for(var i=0;i<n;i++){
       var p = document.createElement('div'); p.className='particle';
       p.style.background = i%3===0 ? '#ffd54a' : (i%3===1 ? '#ff7a3a' : '#8a5cff');
       p.style.left=x+'px'; p.style.top=y+'px';
       document.body.appendChild(p);
-      var a = Math.random()*Math.PI*2, sp = 60+Math.random()*140*(1+m*0.08);
+      var a = Math.random()*Math.PI*2, sp=(big?90:60)+Math.random()*(big?220:140);
       var dx=Math.cos(a)*sp, dy=Math.sin(a)*sp-60;
       var st = p.animate(
         [{transform:'translate(0,0) scale(1)',opacity:1},{transform:'translate('+dx+'px,'+(dy+120)+'px) scale(.2)',opacity:0}],
@@ -157,79 +188,160 @@
     }
   }
 
-  // ---- game ----
+  // ---------- frenzy: shrinking button ----------
+  function frenzySize(elapsedMs){
+    var t = Math.min(1, elapsedMs/45000);
+    var frac = 1 - 0.62*t; // 100% -> 38%
+    var b=$('btn'); b.style.width=(frac*100)+'%'; b.style.height=(frac*100)+'%';
+  }
+  function resetFrenzy(){ var b=$('btn'); b.style.width='100%'; b.style.height='100%'; }
+
+  // ---------- game ----------
   function start(){
-    S.running = true; S.taps=0; S.points=0; S.streak=0; S.lastTap=0;
-    S.t0 = performance.now(); S.endAt = S.t0 + S.dur*1000;
+    if(S.running) return;
+    S.running=true; S.taps=0; S.points=0; S.streak=0; S.lastTap=0;
+    if(S.mode!=='frenzy') resetFrenzy();
+    S.t0=performance.now(); S.endAt=S.t0+S.dur*1000;
     $('overlay').classList.add('hidden');
     $('score').textContent='0'; $('taps').textContent='0'; $('mult').textContent='x1';
     loop();
   }
   function tap(e){
     if(!S.running) return;
-    var now = performance.now();
-    S.streak = (S.lastTap && now - S.lastTap < 350) ? S.streak+1 : 1;
-    S.lastTap = now;
-    var m = 1 + Math.min(9, Math.floor(S.streak/10));
-    S.points += m; S.taps++;
-    $('score').textContent = S.points; $('taps').textContent = S.taps; $('mult').textContent = 'x'+m;
-    var r = $('btnwrap').getBoundingClientRect();
-    var cx = (e && e.clientX !== undefined) ? e.clientX - r.left : r.width/2;
-    var cy = (e && e.clientY !== undefined) ? e.clientY - r.top : r.height/2;
-    burst(cx, cy, m); blip(m);
-    var b = $('btn'); b.classList.add('press'); setTimeout(function(){ b.classList.remove('press'); }, 60);
+    var now=performance.now();
+    S.streak=(S.lastTap && now-S.lastTap<350)?S.streak+1:1;
+    S.lastTap=now;
+    var m=1+Math.min(9,Math.floor(S.streak/10));
+    S.points+=m; S.taps++;
+    $('score').textContent=S.points; $('taps').textContent=S.taps; $('mult').textContent='x'+m;
+    if(S.mode==='frenzy') frenzySize(now-S.t0);
+    var r=$('btnwrap').getBoundingClientRect();
+    var cx=(e&&e.clientX!==undefined)?e.clientX-r.left:r.width/2;
+    var cy=(e&&e.clientY!==undefined)?e.clientY-r.top:r.height/2;
+    burst(cx,cy,m,false); blip(m);
+    var b=$('btn'); b.classList.add('press'); setTimeout(function(){ b.classList.remove('press'); },60);
   }
   function loop(){
     if(!S.running) return;
-    var now = performance.now();
-    var left = Math.max(0, S.endAt - now);
-    $('timerbar').style.width = (left/(S.dur*1000)*100)+'%';
-    if(left <= 0){ finish(); return; }
-    S.raf = requestAnimationFrame(loop);
+    var now=performance.now();
+    $('timerbar').style.width=(Math.max(0,S.endAt-now)/(S.dur*1000)*100)+'%';
+    if(S.endAt-now<=0){ finish(); return; }
+    S.raf=requestAnimationFrame(loop);
   }
+  function checksum(s){ var h=7; for(var i=0;i<s.length;i++){ h=(h*31+s.charCodeAt(i))>>>0; } return h.toString(36); }
   function finish(){
-    S.running = false; cancelAnimationFrame(S.raf);
-    var tps = S.taps / S.dur;
-    var nb = false;
-    if(S.points > best){ best = S.points; nb = true; }
-    if(tps > bestTps){ bestTps = tps; }
-    try { localStorage.setItem('br_best_'+S.mode, String(best));
-          localStorage.setItem('br_tps_'+S.mode, String(bestTps)); } catch(e){}
-    save();
-    // share code
-    var code = (Date.now()%1e7).toString(36) + (S.points*7+13).toString(36);
-    $('sharecode').textContent = 'code: BR-'+code;
-    $('ovTitle').textContent = 'ROYALE COMPLETE';
-    $('ovScore').textContent = S.points;
-    $('ovStats').style.visibility='visible';
-    $('newbest').textContent = nb ? '★ NEW BEST ★' : '';
-    $('startbtn').textContent = 'PLAY AGAIN';
+    S.running=false; cancelAnimationFrame(S.raf);
+    var tps=S.taps/S.dur;
+    var nb=(S.points>=(best[S.mode]||0)) && S.points>0;
+    if(S.points>(best[S.mode]||0)) best[S.mode]=S.points;
+    if(tps>(bestTps[S.mode]||0)) bestTps[S.mode]=tps;
+    saveLocal(S.mode); save();
+    var seed=(Date.now()%1e9);
+    var core=S.mode.slice(0,3).toUpperCase()+String(S.points)+Math.round(tps*10)+'-'+checksum(S.mode+S.points+tps+seed);
+    $('sharecode').textContent='code: BR-'+core;
+    $('ovTitle').textContent='ROYALE COMPLETE';
+    $('ovScore').textContent=S.points;
+    $('newbest').textContent=nb?'★ NEW BEST ★':(S.daily?'DAILY: CLEARED':'');
+    $('startbtn').textContent='PLAY AGAIN';
     $('overlay').classList.remove('hidden');
+    var r=$('btnwrap').getBoundingClientRect();
+    burst(r.left+r.width/2, r.top+r.height/2, 9, true);
+    blip(1,true);
+    pushToBoard(S.points, tps);
   }
 
-  // ---- wiring ----
-  var btn = $('btn');
-  btn.addEventListener('pointerdown', function(e){ e.preventDefault(); tap(e); });
-  btn.addEventListener('contextmenu', function(e){ e.preventDefault(); });
-  document.addEventListener('keydown', function(e){ if((e.key===' '||e.key==='Enter') && S.running){ e.preventDefault(); tap(null); } });
-  $('startbtn').addEventListener('click', function(){ start(); });
+  // ---------- global leaderboard (serverless, best-effort, injected at deploy) ----------
+  var LB_URL = (window.BR_LEADERBOARD && window.BR_LEADERBOARD.url) || '';
+  function renderBoard(entries){
+    var ol=$('boardList'); ol.innerHTML='';
+    var list=(entries||[]).slice(0,10);
+    $('board').style.display='block';
+    if(!list.length){ ol.innerHTML='<li style="justify-content:center">no scores yet — be first</li>'; return; }
+    var myName=(localStorage.getItem('br2_name')||'').slice(0,12);
+    list.forEach(function(e,i){
+      var li=document.createElement('li');
+      if(myName && e.n===myName) li.className='me';
+      li.innerHTML='<span>'+(i+1)+'. '+(e.n||'anon')+'</span><span>'+e.s+' pts · '+Math.round((e.t||0)*10)/10+' tps</span>';
+      ol.appendChild(li);
+    });
+  }
+  function pullBoard(){
+    if(!LB_URL) { $('board').style.display='none'; return; }
+    fetch(LB_URL+'?m='+S.mode)
+      .then(function(r){ return r.json(); })
+      .then(function(d){ window.__lbCache=window.__lbCache||{}; window.__lbCache[S.mode]=d; renderBoard(d); })
+      .catch(function(){ $('board').style.display='none'; });
+  }
+  function pushToBoard(score,tps){
+    if(!LB_URL || score===0) return;
+    var entry={n:(localStorage.getItem('br2_name')||'').slice(0,12)||'anon', s:score, t:Math.round(tps*100)/100};
+    fetch(LB_URL,{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({m:S.mode, e:entry})}).catch(function(){});
+    pullBoard();
+  }
+
+  // ---------- daily challenge (same seed every day) ----------
+  function dailySeed(){ var d=new Date(); return d.getUTCFullYear()*10000+(d.getUTCMonth()+1)*100+d.getUTCDate(); }
+  function mulberry32(a){ return function(){ a|=0; a=a+0x6D2B79F5|0; var t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
+  function dailyInfo(){
+    var seed=dailySeed(), rng=mulberry32(seed);
+    var dur=[20,30,45,60][Math.floor(rng()*4)];
+    var target=250+Math.floor(rng()*500);
+    return {seed:seed, dur:dur, target:target};
+  }
+  function startDaily(){
+    var d=dailyInfo();
+    S.mode='standard'; S.dur=d.dur; S.daily=true; S.pointsTarget=d.target;
+    document.querySelectorAll('.mode').forEach(function(x){ x.classList.remove('active'); });
+    var dm=document.querySelector('.mode[data-mode="daily"]'); if(dm) dm.classList.add('active');
+    $('dailybox').textContent='DAILY TARGET: '+d.target+' pts in '+d.dur+'s (same for everyone today)';
+    start();
+  }
+
+  // ---------- wiring ----------
+  loadLocal();
+  var btn=$('btn');
+  btn.addEventListener('pointerdown',function(e){ e.preventDefault(); tap(e); });
+  btn.addEventListener('contextmenu',function(e){ e.preventDefault(); });
+  document.addEventListener('keydown',function(e){ if((e.key===' '||e.key==='Enter')&&S.running){ e.preventDefault(); tap(null); } });
+  $('startbtn').addEventListener('click',function(){
+    if(document.querySelector('.mode[data-mode="daily"]').classList.contains('active')) startDaily();
+    else start();
+  });
   document.querySelectorAll('.mode').forEach(function(el){
-    el.addEventListener('click', function(){
+    el.addEventListener('click',function(){
+      S.daily=false;
       document.querySelectorAll('.mode').forEach(function(x){ x.classList.remove('active'); });
       el.classList.add('active');
-      S.mode = el.dataset.mode; S.dur = parseInt(el.dataset.dur,10);
-      try { best = parseInt(localStorage.getItem('br_best_'+S.mode)||'0',10)||0;
-            bestTps = parseFloat(localStorage.getItem('br_tps_'+S.mode)||'0')||0; } catch(e2){}
-      save();
+      if(el.dataset.mode==='daily'){
+        var d=dailyInfo();
+        S.mode='standard'; S.dur=d.dur; S.pointsTarget=d.target; S.daily=true;
+        $('dailybox').textContent='DAILY TARGET: '+d.target+' pts in '+d.dur+'s (same for everyone today)';
+      } else {
+        S.daily=false;
+        S.mode=el.dataset.mode; S.dur=parseInt(el.dataset.dur,10);
+        resetFrenzy();
+        $('dailybox').textContent='';
+      }
+      save(); $('boardMode').textContent=S.mode;
+      renderBoard((window.__lbCache||{})[S.mode]||[]);
     });
   });
-  $('sharecode').addEventListener('click', function(){
-    var t = $('sharecode').textContent; if(!t) return;
-    if(navigator.clipboard){ navigator.clipboard.writeText('BUTTON ROYALE — '+S.points+' pts! Beat my score? https://augusteye.github.io/button-royale/ (code '+t.split(' ')[1]+')');
+  $('sharecode').addEventListener('click',function(){
+    var t=$('sharecode').textContent; if(!t) return;
+    var tps=S.taps/S.dur;
+    var txt='BUTTON ROYALE — '+S.points+' pts ('+S.mode+'), '+Math.round(tps*10)/10+' tps! Beat me? https://augusteye.github.io/button-royale/ ('+t+')';
+    if(navigator.clipboard){ navigator.clipboard.writeText(txt);
       var toast=$('toast'); toast.style.opacity=1; setTimeout(function(){ toast.style.opacity=0; },1200); }
   });
-  // expose for automated testing
-  window.RB = { start:start, tap:function(){ tap(null); }, get state(){ return {running:S.running, points:S.points, taps:S.taps, mode:S.mode}; } };
+  if(!localStorage.getItem('br2_name')){
+    setTimeout(function(){ var n=prompt('Optional: your name for the top-10 board (3-12 chars):');
+      if(n){ n=n.trim().slice(0,12); if(n) localStorage.setItem('br2_name',n); } },600);
+  }
+  pullBoard();
+
+  window.RB={ start:start, tap:function(){ tap(null); }, daily:startDaily,
+    get state(){ return {running:S.running, points:S.points, taps:S.taps, mode:S.mode, daily:S.daily, dur:S.dur}; } };
 })();
 </script>
 </body>
